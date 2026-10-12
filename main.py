@@ -2,13 +2,32 @@
 import turtle
 import math
 import random
+import time
+from tkinter import Tk, colorchooser
 
 
-# Window setup
+def choose_color(title, initial_color):
+    """Open a colour picker dialog."""
+    root = Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+    selected = colorchooser.askcolor(
+        color=initial_color,
+        title=title,
+        parent=root,
+    )
+    root.destroy()
+    return selected[1] if selected and selected[1] else initial_color
+
+
+# Choose colours before opening the drawing window.
+heart_color = choose_color("Choose Heart Colour", "#F72568")
+background_color = choose_color("Choose Background Colour", "#101018")
+
 screen = turtle.Screen()
 screen.title("Turtle Art & Animated Heart")
 screen.setup(width=900, height=750)
-screen.bgcolor("#101018")
+screen.bgcolor(background_color)
 screen.tracer(0)
 
 pen = turtle.Turtle()
@@ -23,7 +42,7 @@ heart_pen.penup()
 
 
 def draw_stars(count=90):
-    """Scatter small stars across the background."""
+    """Draw decorative stars in the background."""
     for _ in range(count):
         x = random.randint(-420, 420)
         y = random.randint(-330, 330)
@@ -35,7 +54,6 @@ def draw_stars(count=90):
 
 
 def draw_text():
-    """Display the artwork title and subtitle."""
     pen.goto(0, 275)
     pen.color("#FFD166")
     pen.write(
@@ -61,8 +79,7 @@ def draw_text():
     )
 
 
-def heart_points(size, y_offset=0, steps=240):
-    """Calculate points along a mathematical heart curve."""
+def heart_points(size, y_offset=-35, steps=240):
     points = []
 
     for step in range(steps + 1):
@@ -74,7 +91,6 @@ def heart_points(size, y_offset=0, steps=240):
             - 2 * math.cos(3 * angle)
             - math.cos(4 * angle)
         )
-
         points.append(
             (x * size / 32, y * size / 32 + y_offset)
         )
@@ -82,8 +98,7 @@ def heart_points(size, y_offset=0, steps=240):
     return points
 
 
-def draw_animated_layer(size, colour, y_offset=-35, delay=8):
-    """Animate the outline, then fill the heart with its colour."""
+def draw_animated_layer(size, colour, y_offset=-35):
     points = heart_points(size, y_offset)
 
     heart_pen.clear()
@@ -93,13 +108,11 @@ def draw_animated_layer(size, colour, y_offset=-35, delay=8):
     heart_pen.goto(points[0])
     heart_pen.pendown()
 
-    # Draw the outline progressively.
     for index, point in enumerate(points[1:], start=1):
         heart_pen.goto(point)
 
         if index % 4 == 0:
             screen.update()
-            import time
             time.sleep(0.02)
 
     heart_pen.penup()
@@ -117,22 +130,20 @@ def draw_animated_layer(size, colour, y_offset=-35, delay=8):
 
 
 def draw_animated_heart():
-    """Draw nested hearts in layers."""
+    # Use several shades of the selected colour for a layered effect.
     layers = [
         (245, "#4A102A"),
         (220, "#9E1747"),
-        (190, "#F72568"),
-        (155, "#FF6B8A"),
+        (190, heart_color),
+        (155, heart_color),
         (115, "#FFB3C6"),
     ]
 
     for size, colour in layers:
         draw_animated_layer(size, colour)
-        
-    # Small decorative highlights
+
     heart_pen.goto(-52, 55)
     heart_pen.dot(12, "#FFFFFF")
-
     heart_pen.goto(-28, 42)
     heart_pen.dot(7, "#FFE6EE")
     screen.update()
@@ -142,9 +153,7 @@ def main():
     draw_stars()
     draw_text()
     screen.update()
-
     draw_animated_heart()
-
     screen.mainloop()
 
 
